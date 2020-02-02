@@ -1,0 +1,114 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+#
+#  replicate-setup
+#  
+#  Copyright 2019 Thomas Castleman <contact@draugeros.org>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#  
+#
+R='\033[0;31m'
+G='\033[0;32m'
+Y='\033[1;33m'
+NC='\033[0m'
+if [[ "$EUID" == "0" ]]; then
+	builtin echo -e "\n$R \bPlease do not run replicate-setup with root privleges. This will make your local config inaccessable.$NC\n" && exit 2
+fi
+echo -e "\n$G \bGetting apt lists . . .$NC\n"
+repo_installed=$(apt list --installed 2>/dev/null | grep '\[installed\]' | sed 's/\// /g' | awk '{print $1}')
+local_installed=$(apt list --installed 2>/dev/null | grep '\[installed,local\]' | sed 's/\// /g' | awk '{print $1}')
+echo -e "\n$G \bGetting snapd list . . .$NC\n"
+if [ -f /usr/bin/snap ]; then
+	snap_installed=$(snap list | awk '{print $1}' | grep -v 'Name')
+else
+	snap_installed=""
+fi
+echo -e "\n$G \bGetting flatpak list . . .$NC\n"
+if [ -f /usr/bin/flatpak ]; then
+	flatpak_installed=$(flatpak list -a --columns=application | grep -v 'Application ID')
+else
+	flatpak_installed=""
+fi
+echo -e "\n$G \bCopying config . . .$NC\n"
+mkdir -pv SYSTEM_CONFIG/apps
+cp -Rv /etc SYSTEM_CONFIG/etc
+cp -Rv $HOME/.config SYSTEM_CONFIG/_.config
+cp -v $HOME/.bashrc SYSTEM_CONFIG/_.bashrc
+cp -v $HOME/.bash_profile SYSTEM_CONFIG/_.bash_profile || echo -e "\n$R \b.bash_profile does not exist. Skipping . . .$NC\n"
+cp -v $HOME/.selected_editor SYSTEM_CONFIG/_.selected_editor || echo -e "\n$R \b.selected_editor does not exist. Skipping . . .$NC\n"
+cp -Rv $HOME/bin SYSTEM_CONFIG/bin || echo -e "\n$R \b$HOME/bin does not exist. Skipping . . .$NC\n"
+echo -e "\n$G \bDumping install lists . . .$NC\n"
+echo "$repo_installed" >  SYSTEM_CONFIG/apps/repo_installed.list
+echo "$local_installed" >  SYSTEM_CONFIG/apps/local_installed.list
+echo "$snap_installed" >  SYSTEM_CONFIG/apps/snapd_installed.list
+echo "$flatpak_installed" >  SYSTEM_CONFIG/apps/flatpak_installed.list
+echo -e "\n$G \bCleaning . . .$NC\n"
+rm -v SYSTEM_CONFIG/etc/fstab SYSTEM_CONFIG/etc/hostname SYSTEM_CONFIG/etc/hosts SYSTEM_CONFIG/etc/hosts.allow SYSTEM_CONFIG/etc/hosts.deny SYSTEM_CONFIG/etc/passwd SYSTEM_CONFIG/etc/passwd- SYSTEM_CONFIG/etc/timezone SYSTEM_CONFIG/etc/localtime SYSTEM_CONFIG/etc/lsb-release SYSTEM_CONFIG/etc/os-release SYSTEM_CONFIG/etc/resolv.conf SYSTEM_CONFIG/etc/rmt SYSTEM_CONFIG/etc/vtrgb
+echo -e "\n$G \bMaking setup install script . . .$NC\n"
+echo '#!/bin/bash' > SYSTEM_CONFIG/install-setup
+echo "# -*- coding: utf-8 -*-
+#
+#  install-setup
+#  
+#  Copyright 2019 Thomas Castleman <contact@draugeros.org>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#  
+#
+if [[ \"\$EUID\" == \"0\" ]]; then
+	builtin echo -e \"\n$R \bPlease do not run install-setup with root privleges. This will make your local config inaccessable.$NC\n\" && exit 2
+fi
+echo -e \"\n$G \bReading config files . . .$NC\n\"
+repo_installed=\$(<apps/repo_installed.list)
+local_installed=\$(<apps/local_installed.list)
+snap_installed=\$(<apps/snapd_installed.list)
+flatpak_installed=\$(<apps/flatpak_installed.list)
+echo -e \"\n$G \bBeginning non-root install process . . .$NC\n\"
+cp -v _.bashrc \$HOME/.bashrc
+cp -v _.bash_profile \$HOME/.bash_profile
+cp -v _.selected_editor \$HOME/.selected_editor
+cp -v _.config \$HOME/.config
+cp -Rv bin \$HOME/bin
+echo -e \"\n$Y \bThe remaining install processes must be completed as root in order to write to the appropriate folders/files.$NC\n\"
+sudo su -c \"cp -Rv etc /etc
+apt update
+apt install \\\"\$repo_installed\\\"
+if [ \\\"\$snap_installed\\\" != \\\"\\\" ]; then
+	snap install \\\"\$snap_installed\\\"
+fi
+if [ \\\"\$flatpak_installed\\\" != \\\"\\\" ]; then
+	flatpak install \\\"\$flatpak_installed\\\"
+fi\"
+echo -e \"\n$G \bThe remaining apps to be installed where not from any repository:$NC\n\$local_installed\n\"
+" >> SYSTEM_CONFIG/install-setup
+chmod +x SYSTEM_CONFIG/install-setup
+echo -e "\n$G \bCompressing . . .$NC\n"
+tar -cpaf SYSTEM_CONFIG.tar.gz SYSTEM_CONFIG
+rm -rf SYSTEM_CONFIG
