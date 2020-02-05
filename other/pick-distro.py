@@ -31,7 +31,7 @@ from os import path
 # get length of argument array
 argc = len(argv)
 # set version
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 # set help dialog
 HELP = "\tPass nothing to provide a list of distros to prompts on screen.\n\n\t-h,--help\tPrint this help dialog\n\t--txt\t\tProvide a path to txt file with a list of distros to choose from. One distro per line.\n\t-v,--version\tPrint current version"
 
@@ -109,6 +109,8 @@ else:
 		# cyclicly ask the user for a distro until they say to continue
 		INPUT = input("Input Distro name (or 'continue' to randomly pick one, 'exit' to exit): ")
 		if ((INPUT.lower() == "continue") or (INPUT.lower() == "cont")):
+			#pull all the empty strings out BEFORE checking length
+			dists = [x for x in dists if x != ""]
 			if (len(dists) == 0):
 				# they put nothing in and went straight to continue. This would normally throw an error.
 				# Stop that error and let them try again
