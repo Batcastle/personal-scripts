@@ -395,7 +395,7 @@ alias delete='rm'
 clear
 if [ $(uname -o) != "Android" ]; then
 	echo -e "\nCurrent Display Server: $XDG_SESSION_TYPE\n"
-	alias root='cat ~/.auth | sudo -S'
+	alias root='sudo'
 	alias please='sudo'
 	alias fucking='sudo'
 	alias autoremove='root apt -y autoremove'
