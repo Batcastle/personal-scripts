@@ -4,6 +4,11 @@ PAK=$(cat DEBIAN/control | grep 'Package: ' | sed 's/Package: //g')
 ARCH=$(cat DEBIAN/control | grep 'Architecture: '| sed 's/Architecture: //g')
 FOLDER="$PAK\_$VERSION\_$ARCH"
 FOLDER=$(echo "$FOLDER" | sed 's/\\//g')
+if [ "$ARCH" == "amd64" ]; then
+	COMPILER="g++"
+elif [ "$ARCH" == "arm64" ]; then
+	COMPILER="aarch64-linux-gnu-g++"
+fi
 mkdir ../"$FOLDER"
 ##############################################################
 #							     #
