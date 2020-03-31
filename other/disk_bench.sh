@@ -126,38 +126,40 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 elif [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
 	echo -e "$VERSION"
 elif [ "$1" == "" ] || [ "$1" == " " ]; then
-	if [ "$OS" == "Darwin" ] && [ "$1" != "--override" ] || [ "$1" != "-o" ]; then
-		echo "Starting Benchmarks . . ."
-		PREFIX="$PWD"
-		read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
-		accuracy=$((accuracy * ACCURACY_SCALER))
-		printf "Running Disk Latency Benchmark"
-		result=$(benchmark_latency $accuracy "$PREFIX")
-		echo ""
-		echo "LATENCY: $result"
-		read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
-		accuracy=$((accuracy * ACCURACY_SCALER))
-		printf "Running Disk Write Speed Benchmark"
-		result=$(benchmark_write $accuracy "$PREFIX")
-		echo ""
-		echo "WRITE SPEED: $result"
-	elif [ "$1" == "--override" ] || [ "$1" == "-o" ]; then
-		echo "Starting Benchmarks . . ."
-		PREFIX="$PWD"
-		echo "WARNING: OVERRIDE FLAG SET. IT IS UNKNOWN WHETHER YOUR OS SUPPORTS ALL BENCHMARKS. EXPECT BUGS." 1>&2
-		read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
-		accuracy=$((accuracy * ACCURACY_SCALER))
-		printf "Running Disk Latency Benchmark"
-		result=$(benchmark_latency $accuracy "$PREFIX")
-		echo ""
-		echo "LATENCY: $result"
-		benchmark_read
-		read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
-		accuracy=$((accuracy * ACCURACY_SCALER))
-		printf "Running Disk Write Speed Benchmark"
-		result=$(benchmark_write $accuracy "$PREFIX")
-		echo ""
-		echo "WRITE SPEED: $result"
+	if [ "$OS" == "Darwin" ]; then
+		if [ "$1" != "--override" ] || [ "$1" != "-o" ] ]; then
+			echo "Starting Benchmarks . . ."
+			PREFIX="$PWD"
+			read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
+			accuracy=$((accuracy * ACCURACY_SCALER))
+			printf "Running Disk Latency Benchmark"
+			result=$(benchmark_latency $accuracy "$PREFIX")
+			echo ""
+			echo "LATENCY: $result s"
+			read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
+			accuracy=$((accuracy * ACCURACY_SCALER))
+			printf "Running Disk Write Speed Benchmark"
+			result=$(benchmark_write $accuracy "$PREFIX")
+			echo ""
+			echo "WRITE SPEED: $result"
+		elif [ "$1" == "--override" ] || [ "$1" == "-o" ]; then
+			echo "Starting Benchmarks . . ."
+			PREFIX="$PWD"
+			echo "WARNING: OVERRIDE FLAG SET. IT IS UNKNOWN WHETHER YOUR OS SUPPORTS ALL BENCHMARKS. EXPECT BUGS." 1>&2
+			read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
+			accuracy=$((accuracy * ACCURACY_SCALER))
+			printf "Running Disk Latency Benchmark"
+			result=$(benchmark_latency $accuracy "$PREFIX")
+			echo ""
+			echo "LATENCY: $result s"
+			benchmark_read
+			read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
+			accuracy=$((accuracy * ACCURACY_SCALER))
+			printf "Running Disk Write Speed Benchmark"
+			result=$(benchmark_write $accuracy "$PREFIX")
+			echo ""
+			echo "WRITE SPEED: $result"
+		fi
 	elif [ "$OS" == "Linux" ]; then
 		echo "Starting Benchmarks . . ."
 		read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
@@ -165,7 +167,7 @@ elif [ "$1" == "" ] || [ "$1" == " " ]; then
 		printf "Running Disk Latency Benchmark"
 		result=$(benchmark_latency $accuracy "$PREFIX")
 		echo ""
-		echo "LATENCY: $result"
+		echo "LATENCY: $result s"
 		benchmark_read
 		read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
 		accuracy=$((accuracy * ACCURACY_SCALER))
