@@ -34,7 +34,7 @@ function benchmark_write ()
 	count=0
 	data=()
 	while [[ $count -lt $accuracy ]]; do
-		data[$count]=$(dd if=/dev/zero of="$PREFIX"/write_test.img bs=1G count=1 oflag=dsync 2>&1 | grep 's,' | awk -F "," '{print $4}' | sed 's/ //')
+		data[$count]=$(dd if=/dev/zero of="$PREFIX"/write_test.img bs=1G count=1 2>&1 | grep 's,' | awk -F "," '{print $4}' | sed 's/ //')
 		rm "$PREFIX"/write_test.img
 		count=$((count + 1))
 		printf " ." 1>&2
@@ -43,36 +43,36 @@ function benchmark_write ()
 	count=0
 	while [[ $count -lt $accuracy ]]; do
 		if [ "$type" == "KB/s" ]; then
-			if $(echo "${data[$count]}" | grep -q "KB/s"); then
-				data[$count]="${data[$count]// KB\/s/}"
-			elif $(echo "${data[$count]}" | grep -q "MB/s"); then
-				data[$count]="${data[$count]// MB\/s/}"
+			if $(echo "${data[count]}" | grep -q "KB/s"); then
+				data[$count]="${data[count]// KB\/s/}"
+			elif $(echo "${data[count]}" | grep -q "MB/s"); then
+				data[$count]="${data[count]// MB\/s/}"
 				data[$count]=$(echo "${data[count]} / 1000" | bc -l)
-			elif $(echo "${data[$count]}" | grep -q "GB/s"); then
-				data[$count]="${data[$count]// GB\/s/}"
+			elif $(echo "${data[count]}" | grep -q "GB/s"); then
+				data[$count]="${data[count]// GB\/s/}"
 				data[$count]=$(echo "${data[count]} / 1000" | bc -l)
 				data[$count]=$(echo "${data[count]} / 1000" | bc -l)
 			fi
 		elif [ "$type" == "MB/s" ]; then
-			if $(echo "${data[$count]}" | grep -q "KB/s"); then
-				data[$count]="${data[$count]// KB\/s/}"
+			if $(echo "${data[count]}" | grep -q "KB/s"); then
+				data[$count]="${data[count]// KB\/s/}"
 				data[$count]=$(echo "${data[count]} * 1000" | bc -l)
-			elif $(echo "${data[$count]}" | grep -q "MB/s"); then
-				data[$count]="${data[$count]// MB\/s/}"
-			elif $(echo "${data[$count]}" | grep -q "GB/s"); then
-				data[$count]="${data[$count]// GB\/s/}"
+			elif $(echo "${data[count]}" | grep -q "MB/s"); then
+				data[$count]="${data[count]// MB\/s/}"
+			elif $(echo "${data[count]}" | grep -q "GB/s"); then
+				data[$count]="${data[count]// GB\/s/}"
 				data[$count]=$(echo "${data[count]} / 1000" | bc -l)
 			fi
 		elif [ "$type" == "GB/s" ]; then
-			if $(echo "${data[$count]}" | grep -q "KB/s"); then
-				data[$count]="${data[$count]// KB\/s/}"
+			if $(echo "${data[count]}" | grep -q "KB/s"); then
+				data[$count]="${data[count]// KB\/s/}"
 				data[$count]=$(echo "${data[count]} * 1000" | bc -l)
 				data[$count]=$(echo "${data[count]} * 1000" | bc -l)
-			elif $(echo "${data[$count]}" | grep -q "MB/s"); then
-				data[$count]="${data[$count]// MB\/s/}"
+			elif $(echo "${data[count]}" | grep -q "MB/s"); then
+				data[$count]="${data[count]// MB\/s/}"
 				data[$count]=$(echo "${data[count]} * 1000" | bc -l)
-			elif $(echo "${data[$count]}" | grep -q "GB/s"); then
-				data[$count]="${data[$count]// GB\/s/}"
+			elif $(echo "${data[count]}" | grep -q "GB/s"); then
+				data[$count]="${data[count]// GB\/s/}"
 			fi
 		fi
 		count=$((count + 1))
@@ -108,7 +108,7 @@ function benchmark_latency ()
 	count=0
 	data=()
 	while [[ $count -lt $accuracy ]]; do
-		data[$count]=$(dd if=/dev/zero of="$PREFIX"/latency_test.img bs=512 count=1000 oflag=dsync 2>&1 | grep 's,' | awk -F "," '{print $3}' | sed 's/ s//g' | sed 's/ //g')
+		data[$count]=$(dd if=/dev/zero of="$PREFIX"/latency_test.img bs=512 count=1000 2>&1 | grep 's,' | awk -F "," '{print $3}' | sed 's/ s//g' | sed 's/ //g')
 		rm "$PREFIX"/latency_test.img
 		count=$((count + 1))
 		printf " ." 1>&2
@@ -158,7 +158,7 @@ elif [ "$1" == "" ] || [ "$1" == " " ]; then
 		result=$(benchmark_write $accuracy "$PREFIX")
 		echo ""
 		echo "WRITE SPEED: $result"
-	elif [ "$OS" == "Linux" ]; 
+	elif [ "$OS" == "Linux" ]; then
 		echo "Starting Benchmarks . . ."
 		read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
 		accuracy=$((accuracy * ACCURACY_SCALER))
