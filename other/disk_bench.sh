@@ -21,7 +21,7 @@
 #  MA 02110-1301, USA.
 #
 #
-VERSION="0.0.2"
+VERSION="0.0.3"
 HELP="disk_bench.sh, Version $VERSION\n\n\t-h, --help\t\tPrint this help dialog.\n\t-o, --override\t\t(MacOS & BSD) Override lock-out and allow disk_bench.sh to attempt a full benchmark, regardless of OS support.\n\t-v, --version\t\tPrint the current version of this script.\n\nPass nothing to start the benchmark."
 OS=$(uname)
 ACCURACY_SCALER=2
@@ -89,6 +89,8 @@ function benchmark_write ()
 			elif $(echo "${data[count]}" | grep -q "GB/s"); then
 				data[$count]="${data[count]// GB\/s/}"
 			fi
+		elif [ "$type" == "bytes/sec" ]; then
+			data[$count]="${data[count]// bytes\/sec/}"
 		fi
 		count=$((count + 1))
 	done
@@ -150,9 +152,9 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo -e "$HELP"
 elif [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
 	echo -e "$VERSION"
-elif [ "$1" == "" ] || [ "$1" == " " ]; then
+elif [ "$1" == "" ] || [ "$1" == " " ] ; then
 	if [ "$OS" == "Darwin" ]; then
-		if [ "$1" != "--override" ] || [ "$1" != "-o" ] ]; then
+		if [ "$1" != "--override" ] || [ "$1" != "-o" ] || [ "$1" == "--override" ] || [ "$1" == "-o" ]; then
 			echo "Starting Benchmarks . . ."
 			#PREFIX="$PWD"
 			read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
@@ -203,5 +205,5 @@ elif [ "$1" == "" ] || [ "$1" == " " ]; then
 	fi
 else
 	echo "$1: INPUT NOT RECOGNIZED" 1>&2
-	echo "$HELP"
+	echo -e "$HELP"
 fi
