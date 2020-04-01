@@ -152,9 +152,9 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo -e "$HELP"
 elif [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
 	echo -e "$VERSION"
-elif [ "$1" == "" ] || [ "$1" == " " ] ; then
+elif [ "$1" == "" ] || [ "$1" == " " ] || [ "$1" == "--override" ] || [ "$1" == "-o" ]; then
 	if [ "$OS" == "Darwin" ]; then
-		if [ "$1" != "--override" ] || [ "$1" != "-o" ] || [ "$1" == "--override" ] || [ "$1" == "-o" ]; then
+		if [ "$1" != "--override" ] || [ "$1" != "-o" ]; then
 			echo "Starting Benchmarks . . ."
 			#PREFIX="$PWD"
 			read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
