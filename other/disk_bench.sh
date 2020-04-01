@@ -31,10 +31,25 @@ function benchmark_write ()
 {
 	accuracy=$1
 	PREFIX="$2"
+	OS="$3"
+	if [ "$OS" == "Darwin" ]; then
+		SCALE="g"
+		REGEX1="secs"
+		REGEX2="[()]"
+		REGEX3=2
+	else
+		SCALE="G"
+		REGEX1="s,"
+		REGEX2=","
+		REGEX3=4
+	fi
 	count=0
 	data=()
 	while [[ $count -lt $accuracy ]]; do
-		data[$count]=$(dd if=/dev/zero of="$PREFIX"/write_test.img bs=1G count=1 2>&1 | grep 's,' | awk -F "," '{print $4}' | sed 's/ //')
+		data[$count]=$(dd if=/dev/zero of="$PREFIX"/write_test.img bs=1"$SCALE" count=1 2>&1 | grep "$REGEX1" | awk -F "$REGEX2" "{print \$$REGEX3}")
+		if [ "$OS" == "Linux" ]; then
+			data[$count]=$(echo "${data[count]}" | sed 's/ //')
+		fi
 		rm "$PREFIX"/write_test.img
 		count=$((count + 1))
 		printf " ." 1>&2
@@ -105,10 +120,20 @@ function benchmark_latency ()
 {
 	accuracy=$1
 	PREFIX="$2"
+	OS="$3"
+	if [ "$OS" == "Darwin" ]; then
+		REGEX1="secs"
+		REGEX2=" "
+		REGEX3=5
+	else
+		REGEX1="s,"
+		REGEX2=","
+		REGEX3=3
+	fi
 	count=0
 	data=()
 	while [[ $count -lt $accuracy ]]; do
-		data[$count]=$(dd if=/dev/zero of="$PREFIX"/latency_test.img bs=512 count=1000 2>&1 | grep 's,' | awk -F "," '{print $3}' | sed 's/ s//g' | sed 's/ //g')
+		data[$count]=$(dd if=/dev/zero of="$PREFIX"/latency_test.img bs=512 count=1000 2>&1 | grep "$REGEX1" | awk -F "$REGEX2" "{print \$$REGEX3}" | sed 's/ s//g' | sed 's/ //g')
 		rm "$PREFIX"/latency_test.img
 		count=$((count + 1))
 		printf " ." 1>&2
@@ -129,34 +154,34 @@ elif [ "$1" == "" ] || [ "$1" == " " ]; then
 	if [ "$OS" == "Darwin" ]; then
 		if [ "$1" != "--override" ] || [ "$1" != "-o" ] ]; then
 			echo "Starting Benchmarks . . ."
-			PREFIX="$PWD"
+			#PREFIX="$PWD"
 			read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
 			accuracy=$((accuracy * ACCURACY_SCALER))
 			printf "Running Disk Latency Benchmark"
-			result=$(benchmark_latency $accuracy "$PREFIX")
+			result=$(benchmark_latency $accuracy "$PREFIX" "$OS")
 			echo ""
 			echo "LATENCY: $result s"
 			read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
 			accuracy=$((accuracy * ACCURACY_SCALER))
 			printf "Running Disk Write Speed Benchmark"
-			result=$(benchmark_write $accuracy "$PREFIX")
+			result=$(benchmark_write $accuracy "$PREFIX" "$OS")
 			echo ""
 			echo "WRITE SPEED: $result"
 		elif [ "$1" == "--override" ] || [ "$1" == "-o" ]; then
 			echo "Starting Benchmarks . . ."
-			PREFIX="$PWD"
+			#PREFIX="$PWD"
 			echo "WARNING: OVERRIDE FLAG SET. IT IS UNKNOWN WHETHER YOUR OS SUPPORTS ALL BENCHMARKS. EXPECT BUGS." 1>&2
 			read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
 			accuracy=$((accuracy * ACCURACY_SCALER))
 			printf "Running Disk Latency Benchmark"
-			result=$(benchmark_latency $accuracy "$PREFIX")
+			result=$(benchmark_latency $accuracy "$PREFIX" "$OS")
 			echo ""
 			echo "LATENCY: $result s"
 			benchmark_read
 			read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
 			accuracy=$((accuracy * ACCURACY_SCALER))
 			printf "Running Disk Write Speed Benchmark"
-			result=$(benchmark_write $accuracy "$PREFIX")
+			result=$(benchmark_write $accuracy "$PREFIX" "$OS")
 			echo ""
 			echo "WRITE SPEED: $result"
 		fi
@@ -165,14 +190,14 @@ elif [ "$1" == "" ] || [ "$1" == " " ]; then
 		read -rp "Latency Benchmark Accuracy [1-10]: " accuracy
 		accuracy=$((accuracy * ACCURACY_SCALER))
 		printf "Running Disk Latency Benchmark"
-		result=$(benchmark_latency $accuracy "$PREFIX")
+		result=$(benchmark_latency $accuracy "$PREFIX" "$OS")
 		echo ""
 		echo "LATENCY: $result s"
 		benchmark_read
 		read -rp "Write Speed Benchmark Accuracy [1-10]: " accuracy
 		accuracy=$((accuracy * ACCURACY_SCALER))
 		printf "Running Disk Write Speed Benchmark"
-		result=$(benchmark_write $accuracy "$PREFIX")
+		result=$(benchmark_write $accuracy "$PREFIX" "$OS")
 		echo ""
 		echo "WRITE SPEED: $result"
 	fi
