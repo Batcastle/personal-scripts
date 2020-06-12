@@ -27,7 +27,8 @@ import json
 R = "\033[0;31m"
 G = "\033[0;32m"
 Y = "\033[1;33m"
-NC = "\033[0m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 PASSWORDS = []
 MODE = input("Select Mode: 1: JSON, 2: CLI Input: ")
 if MODE.lower() in ("1", 1, "json"):
@@ -43,13 +44,16 @@ elif MODE.lower() in ("2", 2, "cli", "cli input"):
             print("Exiting . . .")
             exit(0)
         PASSWORDS.append(INPUT)
-print(Y + "compensating for capitalization . . ." + NC)
+print(Y + "compensating for capitalization . . ." + RESET)
 for each in range(len(PASSWORDS)):
     PASSWORDS[each] = PASSWORDS[each].lower()
 while True:
     if len(PASSWORDS) == 1:
-        print(G + "Most likely password: " + PASSWORDS[0] + NC)
+        print("Most likely password: " + G + BOLD + PASSWORDS[0] + RESET)
         exit(0)
+    elif len(PASSWORDS) == 0:
+        print(R + BOLD + "ERROR: " + RESET + "No more possible passwords.")
+        exit(1)
     for each in range(len(PASSWORDS)):
         print("Password number " + str(each) + " :  " + PASSWORDS[each])
     TRYED = input("Tried password number: ")
@@ -62,11 +66,13 @@ while True:
     for each in range(len(PASSWORDS) - 1, -1, -1):
         if each == TRYED:
             continue
-        for each1 in range(len(PASSWORDS[each]) - 1, -1, -1):
-            if ((PASSWORDS[each][each1] == PASSWORDS[TRYED][each1]) and (LIKENESS == 0)):
+        for each1 in range(len(PASSWORDS[each])):
+            if ((PASSWORDS[each][each1] == DELETE[each1]) and (LIKENESS == 0)):
                 del PASSWORDS[each]
                 break
-            elif ((PASSWORDS[each][each1] != PASSWORDS[TRYED][each1]) and (LIKENESS > 0) and ((each1 + 1) == len(PASSWORDS[each]))):
+            elif ((PASSWORDS[each][each1] == DELETE[each1]) and (LIKENESS > 0)):
+                break
+            elif ((PASSWORDS[each][each1] != DELETE[each1]) and (LIKENESS > 0) and ((each1 + 1) == len(PASSWORDS[each]))):
                 del PASSWORDS[each]
                 break
     del PASSWORDS[PASSWORDS.index(DELETE)]
