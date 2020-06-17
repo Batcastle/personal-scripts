@@ -37,10 +37,10 @@ if MODE.lower() in ("1", 1, "json"):
         PASSWORDS = json.load(file_obj)
 elif MODE.lower() in ("2", 2, "cli", "cli input"):
     INPUT = None
-    while INPUT not in ("continue", "next", "proceede"):
-        INPUT = input("Enter possible password, press enter to enter next password, 'exit' to exit, 'next' to break password: ")
+    while INPUT not in ("->", ">"):
+        INPUT = input("Enter possible password, press enter to enter next password, 'X' or 'q' to exit, '->' to break password: ")
         INPUT = INPUT.lower()
-        if INPUT in ("success", "exit", "quit", "done", "bye"):
+        if INPUT in ("x", "q"):
             print("Exiting . . .")
             exit(0)
         PASSWORDS.append(INPUT)
@@ -57,7 +57,7 @@ while True:
     for each in range(len(PASSWORDS)):
         print("Password number " + str(each) + " :  " + PASSWORDS[each])
     TRYED = input("Tried password number: ")
-    if TRYED.lower() in ("success", "exit", "quit", "done", "bye"):
+    if TRYED.lower() in ("success", "exit", "quit", "done", "bye", "q", "x"):
         print("Exiting . . .")
         exit(0)
     TRYED = int(TRYED)
